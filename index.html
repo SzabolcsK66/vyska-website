@@ -1,0 +1,1166 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VYSKA</title>
+
+  <style>
+    :root{
+      --header-h: 72px;
+
+      --text: #1f1f22;
+      --muted: #5c5b58;
+
+      --r: 18px;
+      --t: 220ms;
+
+      --bg0: #f5f0e7;
+      --bg1: #eee6d8;
+
+      --shadow: 0 26px 60px rgba(0,0,0,0.12);
+
+      --mkt: 66, 120, 214;
+      --va:  132, 90, 210;
+      --gfx: 214, 110, 76;
+      --it:  36, 160, 120;
+
+      --hero-img: url("https://images.unsplash.com/photo-1676554436967-3b923dd87c3f?auto=format&fit=crop&q=80&w=2600");
+    }
+
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    html { scroll-behavior: smooth; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+      overflow-x: hidden;
+      background:
+        radial-gradient(1100px 800px at 16% 10%, rgba(0,0,0,0.06), transparent 58%),
+        radial-gradient(900px 700px at 86% 18%, rgba(0,0,0,0.05), transparent 60%),
+        radial-gradient(900px 900px at 58% 92%, rgba(0,0,0,0.04), transparent 62%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+    a{ color: inherit; text-decoration: none; }
+
+    /* ===== HEADER (fixed overlay) ===== */
+    .topbarWrap{
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      z-index: 80;
+      display:flex;
+      align-items:center;
+
+      background: rgba(245,240,231,0.90);
+      border-bottom: 1px solid rgba(0,0,0,0.10);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background var(--t), border-color var(--t), backdrop-filter var(--t);
+    }
+    body.in-hero .topbarWrap{
+      background: rgba(255,255,255,0.16);
+      border-bottom-color: rgba(255,255,255,0.22);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .topbar{
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 18px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .logo{
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      font-size: 14px;
+      user-select: none;
+      color: var(--text);
+      transition: color var(--t);
+      white-space: nowrap;
+    }
+    body.in-hero .logo{ color: rgba(255,255,255,0.95); }
+
+    /* Desktop nav */
+    .tabs{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .pill{
+      font-size: 14px;
+      border: 1px solid rgba(0,0,0,0.12);
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.65);
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      transition: transform var(--t), background var(--t), box-shadow var(--t), border-color var(--t), color var(--t);
+    }
+    body.in-hero .pill{
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.28);
+      color: rgba(255,255,255,0.92);
+    }
+    .pill:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.88);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.10);
+      border-color: rgba(0,0,0,0.18);
+    }
+    body.in-hero .pill:hover{
+      background: rgba(255,255,255,0.28);
+      border-color: rgba(255,255,255,0.40);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+    }
+    .pill.active{
+      border-color: rgba(0,0,0,0.24);
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+    }
+    body.in-hero .pill.active{
+      border-color: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.30);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.20);
+    }
+
+    /* Mobile menu button */
+    .menuBtn{
+      display:none;
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.65);
+      border-radius: 999px;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text);
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    body.in-hero .menuBtn{
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.28);
+      color: rgba(255,255,255,0.92);
+    }
+
+    /* Mobile drawer */
+    .drawerOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(15,16,18,0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:none;
+      z-index: 90;
+    }
+    .drawerOverlay.show{ display:block; }
+
+    .drawer{
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 10px);
+      right: 10px;
+      left: 10px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.80);
+      box-shadow: 0 40px 120px rgba(0,0,0,0.18);
+      overflow: hidden;
+    }
+    .drawerHeader{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.90);
+    }
+    .drawerTitle{
+      font-weight: 900;
+      letter-spacing: 0.10em;
+      font-size: 12px;
+      color: rgba(31,31,34,0.85);
+    }
+    .drawerClose{
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.85);
+      border-radius: 999px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .drawerLinks{
+      display:flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px;
+    }
+    .mLink{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.78);
+      color: rgba(31,31,34,0.92);
+      font-weight: 800;
+    }
+    .mLink small{
+      font-weight: 700;
+      color: rgba(31,31,34,0.60);
+    }
+    .mLink.active{
+      border-color: rgba(0,0,0,0.22);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+    }
+
+    /* ===== HERO ===== */
+    .hero{
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      min-height: 100vh;
+      height: 100svh;
+      min-height: 100svh;
+      overflow: hidden;
+      display:flex;
+      align-items: center;
+    }
+    .heroBg{
+      position:absolute;
+      inset:0;
+      background-image: var(--hero-img);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 0;
+      transform: translateZ(0);
+    }
+    .heroBg::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(900px 600px at 20% 20%, rgba(0,0,0,0.36), transparent 56%),
+        radial-gradient(800px 700px at 80% 25%, rgba(0,0,0,0.26), transparent 58%),
+        linear-gradient(180deg, rgba(0,0,0,0.38), rgba(0,0,0,0.18));
+    }
+    .heroInner{
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: calc(var(--header-h) + 42px) 18px 60px 18px;
+      color: rgba(255,255,255,0.92);
+      display:flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .heroInner h1{
+      margin:0;
+      font-size: clamp(34px, 6.4vw, 60px);
+      line-height: 1.03;
+      letter-spacing: -0.02em;
+    }
+    .heroInner p{
+      margin:0;
+      font-size: clamp(15px, 3.6vw, 18px);
+      max-width: 78ch;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.78);
+    }
+    .heroActions{
+      display:flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .heroBtn{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.92);
+      cursor: pointer;
+      user-select: none;
+      transition: transform var(--t), background var(--t), border-color var(--t), box-shadow var(--t);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    /* ===== SERVICES ===== */
+    .servicesWrap{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 70px 18px 38px 18px;
+      scroll-margin-top: calc(var(--header-h) + 18px);
+    }
+    .servicesTitle{
+      display:flex;
+      align-items:flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .servicesTitle h2{
+      margin:0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .servicesTitle p{
+      margin:0;
+      color: var(--muted);
+      max-width: 72ch;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .panels{
+      display:flex;
+      gap: 14px;
+      height: 320px;
+    }
+    .panel{
+      position: relative;
+      flex: 1 1 0;
+      border-radius: var(--r);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.58), transparent 70%);
+      cursor: pointer;
+      transition: flex var(--t), transform var(--t), box-shadow var(--t), background var(--t), border-color var(--t);
+      display:flex;
+      align-items: flex-end;
+      padding: 18px;
+      overflow: hidden;
+    }
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:-40px;
+      background:
+        radial-gradient(520px 300px at 18% 12%, rgba(var(--accent),0.20), transparent 62%),
+        radial-gradient(460px 320px at 85% 28%, rgba(var(--accent),0.11), transparent 62%);
+      z-index: -1;
+      opacity: 0.95;
+    }
+    .panel:hover{
+      flex: 1.45 1 0;
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+      border-color: rgba(0,0,0,0.14);
+      background: linear-gradient(180deg, rgba(255,255,255,0.76), transparent 75%);
+    }
+    .card{ width: 100%; display:flex; flex-direction: column; gap: 10px; }
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      font-size: 12px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--muted);
+      user-select: none;
+    }
+    .dot{
+      width: 8px; height: 8px;
+      border-radius: 999px;
+      background: rgba(var(--accent), 1);
+      box-shadow: 0 0 22px rgba(var(--accent), 0.28);
+      flex: 0 0 auto;
+    }
+    .title{
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .desc{
+      margin:0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .more{
+      margin-top: 8px;
+      display:none;
+      gap: 8px;
+      flex-direction: column;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0,0,0,0.10);
+    }
+    .panel:hover .more{ display:flex; }
+    .bullet{
+      font-size: 14px;
+      color: rgba(31,31,34,0.88);
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .bullet::before{
+      content:"";
+      width: 6px; height: 6px;
+      border-radius: 999px;
+      background: rgba(var(--accent), 0.95);
+      box-shadow: 0 0 14px rgba(var(--accent), 0.22);
+      flex: 0 0 auto;
+    }
+
+    /* ===== ABOUT ===== */
+    section.about{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 54px 18px 78px 18px;
+      scroll-margin-top: calc(var(--header-h) + 18px);
+    }
+
+    .aboutCard{
+      border-radius: var(--r);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.62);
+      padding: 22px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.08);
+    }
+
+    .aboutHead h2{
+      margin:0 0 12px 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .aboutText{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 92ch;
+    }
+
+    .profilesWide{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .profileCard{
+      border-radius: 22px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.78);
+      padding: 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
+      display:flex;
+      align-items:center;
+      gap: 16px;
+      min-height: 124px;
+    }
+    .profileCard:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.12);
+      border-color: rgba(0,0,0,0.14);
+      background: rgba(255,255,255,0.92);
+    }
+    .profileCard.left { justify-content: flex-start; }
+    .profileCard.right { justify-content: flex-end; text-align: right; }
+
+    .avatarBig{
+      width: 74px; height: 74px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      display:grid;
+      place-items:center;
+      font-weight: 1000;
+      letter-spacing: 0.06em;
+      font-size: 22px;
+      color: rgba(31,31,34,0.90);
+      background:
+        radial-gradient(70px 54px at 30% 20%, rgba(0,0,0,0.08), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.62));
+      flex: 0 0 auto;
+    }
+
+    .profileMeta{
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .profileName{
+      margin:0;
+      font-weight: 1000;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .profileBadges{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .badge{
+      border-radius: 999px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.70);
+      font-weight: 1000;
+      font-size: 13px;
+      color: rgba(31,31,34,0.88);
+      white-space: nowrap;
+    }
+    .badge.mkt{ border-color: rgba(var(--mkt),0.35); background: rgba(var(--mkt),0.10); }
+    .badge.va { border-color: rgba(var(--va),0.35);  background: rgba(var(--va),0.10); }
+    .badge.gfx{ border-color: rgba(var(--gfx),0.35); background: rgba(var(--gfx),0.10); }
+    .badge.it { border-color: rgba(var(--it),0.35);  background: rgba(var(--it),0.10); }
+
+    .profileHint{
+      margin:0;
+      font-size: 13px;
+      color: rgba(31,31,34,0.60);
+    }
+
+    /* ===== CATEGORY SECTIONS (KEEP BIG SPACING + CARD) ===== */
+    /* This is the important part: large padding to keep sections separated */
+    section.content{
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 210px 18px; /* BIG spacing restored */
+      scroll-margin-top: calc(var(--header-h) + 26px);
+    }
+
+    .sectionCard{
+      border-radius: var(--r);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.62);
+      padding: 28px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.08);
+    }
+
+    section.content h2{
+      margin:0 0 10px 0;
+      font-size: 36px;
+      letter-spacing: -0.02em;
+    }
+    .lead{
+      margin:0 0 22px 0;
+      color: var(--muted);
+      max-width: 78ch;
+      line-height: 1.65;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .box{
+      grid-column: span 6;
+      border-radius: var(--r);
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.62);
+      padding: 18px;
+      transition: transform var(--t), box-shadow var(--t), background var(--t), border-color var(--t);
+    }
+    .box:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.80);
+      border-color: rgba(0,0,0,0.14);
+    }
+    .box h3{ margin:0 0 8px 0; font-size: 18px; }
+    .box p{ margin:0; color: var(--muted); line-height:1.55; }
+
+    /* Contact */
+    .contactRow{
+      display:flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      align-items: center;
+    }
+    .input, .btn{
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.62);
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+    .input{ flex: 1 1 220px; }
+    .btn{
+      cursor:pointer;
+      background: rgba(255,255,255,0.76);
+      font-weight: 900;
+    }
+
+    /* ===== MODAL (profiles) ===== */
+    .modalOverlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(15,16,18,0.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:none;
+      z-index: 95;
+      padding: 18px;
+    }
+    .modalOverlay.show{ display:grid; place-items:center; }
+
+    .modal{
+      width: min(560px, 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(255,255,255,0.86);
+      box-shadow: 0 50px 140px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+
+    .modalHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.92);
+    }
+
+    .modalTitleRow{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+    }
+
+    .modalAvatar{
+      width: 48px; height: 48px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.10);
+      display:grid;
+      place-items:center;
+      font-weight: 1000;
+      letter-spacing: 0.06em;
+      background:
+        radial-gradient(50px 40px at 30% 20%, rgba(0,0,0,0.08), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,0.90), rgba(255,255,255,0.62));
+    }
+
+    .modalTitle{
+      margin:0;
+      font-size: 16px;
+      font-weight: 1000;
+      letter-spacing: -0.01em;
+    }
+    .modalSub{
+      margin:0;
+      font-size: 13px;
+      color: rgba(31,31,34,0.60);
+    }
+
+    .modalClose{
+      border: 1px solid rgba(0,0,0,0.12);
+      background: rgba(255,255,255,0.92);
+      border-radius: 999px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 1000;
+    }
+
+    .modalBody{
+      padding: 16px 16px 18px 16px;
+    }
+
+    .chips{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .chip{
+      border-radius: 999px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.10);
+      background: rgba(255,255,255,0.78);
+      font-weight: 1000;
+      font-size: 13px;
+      color: rgba(31,31,34,0.88);
+      user-select: none;
+    }
+
+    .chip[data-accent="mkt"]{ border-color: rgba(var(--mkt),0.35); background: rgba(var(--mkt),0.08); }
+    .chip[data-accent="va"] { border-color: rgba(var(--va),0.35);  background: rgba(var(--va),0.08); }
+    .chip[data-accent="gfx"]{ border-color: rgba(var(--gfx),0.35); background: rgba(var(--gfx),0.08); }
+    .chip[data-accent="it"] { border-color: rgba(var(--it),0.35);  background: rgba(var(--it),0.08); }
+
+    /* ===== MOBILE RULES ===== */
+    @media (max-width: 860px){
+      :root{ --header-h: 68px; }
+
+      .tabs{ display:none; }
+      .menuBtn{ display:inline-flex; }
+
+      .heroInner{
+        padding: calc(var(--header-h) + 34px) 18px 44px 18px;
+      }
+
+      .panels{ height: auto; flex-direction: column; }
+      .panel:hover{ flex: 1 1 0; transform: none; box-shadow: none; }
+      .more{ display:flex; }
+
+      .profilesWide{ grid-template-columns: 1fr; }
+      .profileCard.right{ justify-content: flex-start; text-align: left; }
+      .avatarBig{ width: 78px; height: 78px; }
+
+      /* keep big spacing on mobile but not insane */
+      section.content{ padding: 140px 18px; }
+      .sectionCard{ padding: 22px; }
+
+      .box{ grid-column: span 12; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+
+<body class="in-hero">
+  <!-- HEADER -->
+  <div class="topbarWrap">
+    <header class="topbar">
+      <div class="logo">VYSKA</div>
+
+      <!-- Desktop nav -->
+      <nav class="tabs" aria-label="Navigáció">
+        <a class="pill" href="#services" data-smooth data-nav="services">Kategóriák</a>
+        <a class="pill" href="#about" data-smooth data-nav="about">Rólunk</a>
+        <a class="pill" href="#marketing" data-smooth data-nav="marketing">Marketing</a>
+        <a class="pill" href="#va" data-smooth data-nav="va">VA</a>
+        <a class="pill" href="#grafika" data-smooth data-nav="grafika">Grafika</a>
+        <a class="pill" href="#it" data-smooth data-nav="it">IT</a>
+        <a class="pill" href="#contact" data-smooth data-nav="contact">Kapcsolat</a>
+      </nav>
+
+      <!-- Mobile menu -->
+      <button class="menuBtn" id="menuBtn" type="button" aria-haspopup="dialog" aria-controls="drawerOverlay" aria-expanded="false">
+        Menü ☰
+      </button>
+    </header>
+  </div>
+
+  <!-- Mobile drawer -->
+  <div class="drawerOverlay" id="drawerOverlay" aria-hidden="true">
+    <div class="drawer" role="dialog" aria-modal="true" aria-label="Mobil menü">
+      <div class="drawerHeader">
+        <div class="drawerTitle">NAVIGÁCIÓ</div>
+        <button class="drawerClose" id="drawerClose" type="button">Bezárás ✕</button>
+      </div>
+      <div class="drawerLinks">
+        <a class="mLink" href="#services" data-smooth data-mnav="services"><span>Kategóriák</span><small>↓</small></a>
+        <a class="mLink" href="#about" data-smooth data-mnav="about"><span>Rólunk</span><small>👥</small></a>
+        <a class="mLink" href="#marketing" data-smooth data-mnav="marketing"><span>Marketing</span><small>→</small></a>
+        <a class="mLink" href="#va" data-smooth data-mnav="va"><span>VA</span><small>→</small></a>
+        <a class="mLink" href="#grafika" data-smooth data-mnav="grafika"><span>Grafika</span><small>→</small></a>
+        <a class="mLink" href="#it" data-smooth data-mnav="it"><span>IT</span><small>→</small></a>
+        <a class="mLink" href="#contact" data-smooth data-mnav="contact"><span>Kapcsolat</span><small>✉</small></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="heroBg" aria-hidden="true"></div>
+
+    <div class="heroInner">
+      <h1>Miben segíthetünk?</h1>
+      <p>
+        Válassz egy területet, és arra fókuszálunk — prémium, letisztult módon, sallangok nélkül.
+        Marketing, VA, grafika és IT egy rendszerben.
+      </p>
+
+      <div class="heroActions">
+        <button class="heroBtn" type="button" id="toServices">Lásd a kategóriákat ↓</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="servicesWrap" id="services">
+    <div class="servicesTitle">
+      <div>
+        <h2>Kategóriák</h2>
+        <p>Mobilon is minden részlet látszik a paneleken. Katt → a hozzá tartozó szekció.</p>
+      </div>
+    </div>
+
+    <div class="panels" aria-label="Szolgáltatások">
+      <div class="panel" role="button" tabindex="0" style="--accent: var(--mkt);" data-target="#marketing">
+        <div class="card">
+          <div class="tag"><span class="dot"></span> VYSKA / Marketing</div>
+          <h3 class="title">Marketing</h3>
+          <p class="desc">Növekedés, stratégia, láthatóság — mérhetően.</p>
+          <div class="more" aria-hidden="true">
+            <div class="bullet">Social media menedzsment</div>
+            <div class="bullet">Hirdetéskezelés (Meta / Google)</div>
+            <div class="bullet">Kampány- és tartalomstratégia</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" role="button" tabindex="0" style="--accent: var(--va);" data-target="#va">
+        <div class="card">
+          <div class="tag"><span class="dot"></span> VYSKA / VA</div>
+          <h3 class="title">Virtuális asszisztencia</h3>
+          <p class="desc">Időt szabadítunk fel, rendszert viszünk a háttérbe.</p>
+          <div class="more" aria-hidden="true">
+            <div class="bullet">Adminisztráció és adatkezelés</div>
+            <div class="bullet">Email & naptár menedzsment</div>
+            <div class="bullet">Kutatás, riportok, támogatás</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" role="button" tabindex="0" style="--accent: var(--gfx);" data-target="#grafika">
+        <div class="card">
+          <div class="tag"><span class="dot"></span> VYSKA / Design</div>
+          <h3 class="title">Grafika</h3>
+          <p class="desc">Vizuális arculat, ami azonnal felismerhető.</p>
+          <div class="more" aria-hidden="true">
+            <div class="bullet">Arculat és logó</div>
+            <div class="bullet">Social media design</div>
+            <div class="bullet">Webes és nyomdai anyagok</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" role="button" tabindex="0" style="--accent: var(--it);" data-target="#it">
+        <div class="card">
+          <div class="tag"><span class="dot"></span> VYSKA / IT</div>
+          <h3 class="title">Informatika / IT</h3>
+          <p class="desc">Web, automatizáció, rendszerek — stabilan és érthetően.</p>
+          <div class="more" aria-hidden="true">
+            <div class="bullet">Weboldal karbantartás</div>
+            <div class="bullet">Automatizáció (workflow-k, űrlapok)</div>
+            <div class="bullet">Integrációk & technikai támogatás</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="aboutCard">
+      <div class="aboutHead">
+        <h2>Rólunk</h2>
+      </div>
+
+      <p class="aboutText">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit
+        amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a,
+        semper congue, euismod non, mi.
+      </p>
+
+      <div class="profilesWide" aria-label="Csapat">
+        <!-- Left: Erika -->
+        <div class="profileCard left" role="button" tabindex="0" data-person="erika">
+          <div class="avatarBig" aria-hidden="true">E</div>
+          <div class="profileMeta">
+            <p class="profileName">Erika</p>
+            <div class="profileBadges">
+              <span class="badge mkt">Marketing</span>
+              <span class="badge va">VA</span>
+            </div>
+            <p class="profileHint">Kattints a részletekhez</p>
+          </div>
+        </div>
+
+        <!-- Right: Szabolcs -->
+        <div class="profileCard right" role="button" tabindex="0" data-person="szabolcs">
+          <div class="profileMeta">
+            <p class="profileName">Szabolcs</p>
+            <div class="profileBadges" style="justify-content:flex-end;">
+              <span class="badge it">IT</span>
+              <span class="badge gfx">Grafika</span>
+            </div>
+            <p class="profileHint">Kattints a részletekhez</p>
+          </div>
+          <div class="avatarBig" aria-hidden="true">S</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORY SECTIONS -->
+  <section class="content" id="marketing">
+    <div class="sectionCard">
+      <h2>Marketing</h2>
+      <p class="lead">Rendszert építünk, mérünk, és skálázható növekedést hozunk.</p>
+      <div class="grid">
+        <div class="box"><h3>Stratégia</h3><p>Közönség, ajánlat, üzenetek és csatornák – fókuszáltan.</p></div>
+        <div class="box"><h3>Hirdetések</h3><p>Meta/Google kampányok, tesztelés, optimalizálás – ROI szemlélet.</p></div>
+        <div class="box"><h3>Tartalom</h3><p>Posztok, kreatívok, naptár – következetes jelenlét.</p></div>
+        <div class="box"><h3>Mérés</h3><p>Átlátható KPI-ok, egyszerű riportok, döntést támogató adatok.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="va">
+    <div class="sectionCard">
+      <h2>Virtuális asszisztencia</h2>
+      <p class="lead">Rendet teszünk a háttérben, hogy te a fontosra figyelj.</p>
+      <div class="grid">
+        <div class="box"><h3>Admin</h3><p>Adatbevitel, dokumentumok, rendszerezés, folyamatok.</p></div>
+        <div class="box"><h3>Email & Naptár</h3><p>Inbox zero, időpontok, követések – nyugodt működés.</p></div>
+        <div class="box"><h3>Kutatás</h3><p>Piackutatás, összegzések, listák – gyors háttértámogatás.</p></div>
+        <div class="box"><h3>Operáció</h3><p>CRM, ügyfélkezelés, feladatlista – kevesebb káosz.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="grafika">
+    <div class="sectionCard">
+      <h2>Grafika</h2>
+      <p class="lead">Egységes, prémium vizuál – online és offline.</p>
+      <div class="grid">
+        <div class="box"><h3>Arculat</h3><p>Logó, színek, tipó, guideline – egységes megjelenés.</p></div>
+        <div class="box"><h3>Social kreatív</h3><p>Poszt/story sablonok, kampány kreatívok – konzisztencia.</p></div>
+        <div class="box"><h3>Webes anyagok</h3><p>Banner, landing elemek, UI grafika – modern megjelenés.</p></div>
+        <div class="box"><h3>Print</h3><p>Névjegy, szórólap, plakát – nyomdakész anyagok.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="it">
+    <div class="sectionCard">
+      <h2>Informatika / IT</h2>
+      <p class="lead">Stabil web, automatizált folyamatok, érthető technika.</p>
+      <div class="grid">
+        <div class="box"><h3>Karbantartás</h3><p>Frissítések, hibajavítás, sebesség, alap SEO.</p></div>
+        <div class="box"><h3>Automatizáció</h3><p>Űrlap → email/Sheets/CRM, sablonok, workflow-k.</p></div>
+        <div class="box"><h3>Integrációk</h3><p>Naptár, foglalás, hírlevél, fizetés – összehangolva.</p></div>
+        <div class="box"><h3>Tanácsadás</h3><p>Domain, tárhely, email, biztonság, backup – jó döntések.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content" id="contact">
+    <div class="sectionCard">
+      <h2>Kapcsolat</h2>
+      <p class="lead">Írj pár sort, és visszajelzünk. (Később rákötjük rendes elküldésre.)</p>
+      <div class="contactRow">
+        <input class="input" type="text" placeholder="Név" />
+        <input class="input" type="email" placeholder="Email" />
+        <button class="btn" type="button" onclick="alert('Később rákötjük a valódi űrlap-küldést 🙂')">Kapcsolatfelvétel</button>
+        <a class="pill" href="#top" data-smooth data-nav="top">Vissza a tetejére ↑</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE MODAL -->
+  <div class="modalOverlay" id="profileModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Profil">
+      <div class="modalHeader">
+        <div class="modalTitleRow">
+          <div class="modalAvatar" id="modalAvatar" aria-hidden="true">?</div>
+          <div>
+            <p class="modalTitle" id="modalName">Név</p>
+            <p class="modalSub" id="modalSub">Területek</p>
+          </div>
+        </div>
+        <button class="modalClose" id="modalClose" type="button">Bezárás ✕</button>
+      </div>
+
+      <div class="modalBody">
+        <p class="aboutText" id="modalText" style="margin:0;">Lorem ipsum dolor sit amet.</p>
+        <div class="chips" id="modalChips"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function smoothTo(selector){
+      const el = document.querySelector(selector);
+      if(!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    document.querySelectorAll('a[data-smooth]').forEach(a => {
+      a.addEventListener("click", (e) => {
+        const href = a.getAttribute("href");
+        if(!href || !href.startsWith("#")) return;
+        e.preventDefault();
+        smoothTo(href);
+        history.replaceState(null, "", href);
+      });
+    });
+
+    document.getElementById("toServices").addEventListener("click", () => smoothTo("#services"));
+
+    document.querySelectorAll(".panel").forEach(panel => {
+      const target = panel.getAttribute("data-target");
+      panel.addEventListener("click", () => smoothTo(target));
+      panel.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " ") { e.preventDefault(); smoothTo(target); }
+      });
+    });
+
+    const hero = document.querySelector(".hero");
+    const heroObserver = new IntersectionObserver((entries) => {
+      document.body.classList.toggle("in-hero", !!entries[0]?.isIntersecting);
+    }, { threshold: 0.35 });
+    heroObserver.observe(hero);
+
+    const pills = [...document.querySelectorAll('.pill[data-nav]')];
+    const pillMap = new Map(pills.map(p => [p.getAttribute('data-nav'), p]));
+    const mLinks = [...document.querySelectorAll('.mLink[data-mnav]')];
+    const mMap = new Map(mLinks.map(m => [m.getAttribute('data-mnav'), m]));
+
+    function setActive(key){
+      pills.forEach(p => p.classList.remove("active"));
+      mLinks.forEach(m => m.classList.remove("active"));
+      const p = pillMap.get(key);
+      const m = mMap.get(key);
+      if(p) p.classList.add("active");
+      if(m) m.classList.add("active");
+    }
+
+    const watchIds = ["services","about","marketing","va","grafika","it","contact"];
+    const sectionObserver = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(!visible) return;
+      setActive(visible.target.id);
+    }, { threshold: [0.22, 0.38, 0.60] });
+
+    watchIds.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) sectionObserver.observe(el);
+    });
+    setActive("services");
+
+    const menuBtn = document.getElementById("menuBtn");
+    const overlay = document.getElementById("drawerOverlay");
+    const closeBtn = document.getElementById("drawerClose");
+
+    function openDrawer(){
+      overlay.classList.add("show");
+      overlay.setAttribute("aria-hidden","false");
+      menuBtn.setAttribute("aria-expanded","true");
+      document.body.style.overflow = "hidden";
+    }
+    function closeDrawer(){
+      overlay.classList.remove("show");
+      overlay.setAttribute("aria-hidden","true");
+      menuBtn.setAttribute("aria-expanded","false");
+      document.body.style.overflow = "";
+    }
+
+    menuBtn.addEventListener("click", openDrawer);
+    closeBtn.addEventListener("click", closeDrawer);
+    overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeDrawer(); });
+    document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && overlay.classList.contains("show")) closeDrawer(); });
+
+    document.querySelectorAll('.mLink[data-smooth]').forEach(link=>{
+      link.addEventListener("click", ()=> closeDrawer());
+    });
+
+    const profileModal = document.getElementById("profileModal");
+    const modalClose = document.getElementById("modalClose");
+    const modalAvatar = document.getElementById("modalAvatar");
+    const modalName = document.getElementById("modalName");
+    const modalSub = document.getElementById("modalSub");
+    const modalText = document.getElementById("modalText");
+    const modalChips = document.getElementById("modalChips");
+
+    const PEOPLE = {
+      erika: {
+        initials: "E",
+        name: "Erika",
+        sub: "Marketing • Virtuális asszisztencia",
+        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam.",
+        chips: [
+          { label: "Marketing", accent: "mkt" },
+          { label: "VA", accent: "va" }
+        ]
+      },
+      szabolcs: {
+        initials: "S",
+        name: "Szabolcs",
+        sub: "Informatika / IT • Grafika",
+        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed nisi. Nulla quis sem at nibh elementum imperdiet.",
+        chips: [
+          { label: "IT", accent: "it" },
+          { label: "Grafika", accent: "gfx" }
+        ]
+      }
+    };
+
+    function openProfile(key){
+      const p = PEOPLE[key];
+      if(!p) return;
+
+      modalAvatar.textContent = p.initials;
+      modalName.textContent = p.name;
+      modalSub.textContent = p.sub;
+      modalText.textContent = p.text;
+
+      modalChips.innerHTML = "";
+      p.chips.forEach(c => {
+        const el = document.createElement("div");
+        el.className = "chip";
+        el.setAttribute("data-accent", c.accent);
+        el.textContent = c.label;
+        modalChips.appendChild(el);
+      });
+
+      profileModal.classList.add("show");
+      profileModal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeProfile(){
+      profileModal.classList.remove("show");
+      profileModal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    document.querySelectorAll(".profileCard").forEach(card => {
+      card.addEventListener("click", () => openProfile(card.getAttribute("data-person")));
+      card.addEventListener("keydown", (e) => {
+        if(e.key === "Enter" || e.key === " ") { e.preventDefault(); openProfile(card.getAttribute("data-person")); }
+      });
+    });
+
+    modalClose.addEventListener("click", closeProfile);
+    profileModal.addEventListener("click", (e) => { if(e.target === profileModal) closeProfile(); });
+    document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && profileModal.classList.contains("show")) closeProfile(); });
+  </script>
+</body>
+</html>
